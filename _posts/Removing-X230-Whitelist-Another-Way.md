@@ -55,11 +55,15 @@ ThinkPad *30 这一代的 BIOS 的白名单移除方法在[这里](https://githu
 
 ![6-caller-function](../img/Remove-X230-Whitelist-Another-Way/6-caller-function.png)
 
+### 震惊！美帝良心竟如此产生错误
+
 在 `loc_A9E` 上面还可以看到 VID / PID [/ SUBSYS] 的打印流程。可以看到打印 ID 以后都会到 `loc_A9E` 来，说明这几个 location 都是错误路径。再从选择打印 ID 数量的分支处（0xA4D）往上看，0xA3D 处还有个跳转，到 `loc_B0F` 。B0F 这里没什么操作就 return 了。
 
 ![7-loc_b0f](../img/Remove-X230-Whitelist-Another-Way/7-loc_b0f.png)
 
 看起来这是正确路径，虽然不知道这是在干嘛（当然也不知道错误路径最后跳哪去了）。
+
+### Hack it
 
 那么猜一下，在 `jl loc_B0F` 那里不进行 less than 判断而强制跳转，应该没问题了吧？
 
@@ -82,7 +86,9 @@ Hex View 中 0xA3D 这条指令对应的 opcode 是
 | `E9 cw` | `JMP rel16` | Jump near, relative, displacement relative to next instruction. |
 | `E9 cd` | `JMP rel32` | Jump near, relative, displacement relative to next instruction. |
 
-一开始不是很明白 `cw` `cd` 是什么，但看到 `rel16` 和 `rel32` 就猜了下这应该是 16 位或者 32 位的地址（那都是 E9 开头，处理器怎么分？）
+（来自 http://unixwiz.net/techtips/x86-jumps.html）
+
+一开始不是很明白 `cw` `cd` 是什么，但看到 `rel16` 和 `rel32` 就猜了下这应该是 16 位或者 32 位的地址（那都是 E9 开头，处理器怎么分？）（单片机忘得一干二净）
 
 算了就这样理解吧。那 E9 只是一个字节，0F 8C 是两个。把接近地址的 8C 用 E9 替换，0F 用单字节的空操作 NOP（90）替换，看看 IDA 认不认？
 
