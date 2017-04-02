@@ -18,6 +18,15 @@ K3 里面是 BCM4366C0，这个型号的 firmware 没有公开可用的。公开
 * 放在特定位置的手机对 2.4GHz 和 5GHz 信号的接收强度
 * 电脑测速（黑苹果 BCM4360）
 
+固件来源具体是：
+
+* Linksys EA9500, 1.1.7.179240 Hardware Revision 1.1
+* Asus RT-AC88U/AC3100/AC5300, Koolshare Mods X7.2 （这三个路由的固件提取出来都是一样的）
+* Netgear R8500, Koolshare Mods (based on stock firmware) 0.2
+* K3, stock firmware MTD dump, 21.4.33.212
+
+上官网太慢没办法 [摊手]
+
 设备放置：路由左边 10cm 是电脑，电脑左边 10cm 是手机。问我为什么不隔开一点？因为网线只有那么长。无线都设置 WPA2-PSK-AES 加密，密码 12345678.
 
 ## Linksys EA9500 固件
