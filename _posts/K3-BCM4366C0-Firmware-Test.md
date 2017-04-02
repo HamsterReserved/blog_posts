@@ -21,16 +21,199 @@ K3 里面是 BCM4366C0，这个型号的 firmware 没有公开可用的。公开
 固件来源具体是：
 
 * Linksys EA9500, 1.1.7.179240 Hardware Revision 1.1
-* Asus RT-AC88U/AC3100/AC5300, Koolshare Mods X7.2 （这三个路由的固件提取出来都是一样的）
+* Asus RT-AC88U / AC3100 / AC5300, Koolshare Mods X7.2 （这三个路由的固件提取出来都是一样的）
 * Netgear R8500, Koolshare Mods (based on stock firmware) 0.2
 * K3, stock firmware MTD dump, 21.4.33.212
 
 上官网太慢没办法 [摊手]
 
-设备放置：路由左边 10cm 是电脑，电脑左边 10cm 是手机。问我为什么不隔开一点？因为网线只有那么长。无线都设置 WPA2-PSK-AES 加密，密码 12345678.
+设备放置：路由左边 1m 是电脑，电脑左边 10cm 是手机。问我为什么不隔开一点？因为网线只有那么长。无线都设置 WPA2-PSK-AES 加密，密码 12345678.
+
+每个固件测试完后，都通过路由器硬件开关把路由关掉重启，以避免上次上传的固件的影响。
+
+作为基础的 LEDE 固件通过 tftp 启动，并不刷入 flash.
 
 ## Linksys EA9500 固件
 
-### 2.4GHz
+```
+brcmfmac: brcmf_c_preinit_dcmds: Firmware version = wl0: Feb 14 2017 16:45:30 version 10.10.122.301 (r658909) FWID 01-1ebebd8a
+```
 
+```
+Failed to create interface mon.wlan0: -95 (Not supported)
+wlan0: interface state UNINITIALIZED->COUNTRY_UPDATE
+wlan0: Could not connect to kernel driver
+Using interface wlan0 with hwaddr d8:c8:e9:fe:89:a1 and ssid "LEDE"
+wlan0: interface state COUNTRY_UPDATE->ENABLED
+wlan0: AP-ENABLED
+Configuration file: /tmp/run/hostapd-phy1.conf
+Failed to create interface mon.wlan1: -95 (Not supported)
+wlan1: interface state UNINITIALIZED->COUNTRY_UPDATE
+wlan1: interface state COUNTRY_UPDATE->HT_SCAN
+wlan1: Could not connect to kernel driver
+Using interface wlan1 with hwaddr d8:c8:e9:fe:89:a2 and ssid "LEDE-5G"
+wlan1: interface state HT_SCAN->ENABLED
+wlan1: AP-ENABLED
+```
 
+### 2.4 GHz
+
+手机 RSSI -40dBm
+
+电脑 RSSI -29dBm
+
+### 5 GHz
+
+手机 RSSI -49dBm
+
+电脑 RSSI -30dBm
+
+LAN -> 5G 650Mbps
+
+5G -> LAN 500Mbps
+
+## Asus RT-AC88U / AC3100 / AC5300 固件
+
+```
+brcmfmac: brcmf_c_preinit_dcmds: Firmware version = wl0: May 12 2016 11:33:40 version 10.10.69.6904 (r635567) FWID 01-a1b24c27
+```
+
+```
+Configuration file: /tmp/run/hostapd-phy0.conf
+Failed to create interface mon.wlan0: -95 (Not supported)
+wlan0: interface state UNINITIALIZED->COUNTRY_UPDATE
+wlan0: Could not connect to kernel driver
+Using interface wlan0 with hwaddr d8:c8:e9:fe:89:a1 and ssid "LEDE"
+wlan0: interface state COUNTRY_UPDATE->ENABLED
+wlan0: AP-ENABLED
+Configuration file: /tmp/run/hostapd-phy1.conf
+Failed to create interface mon.wlan1: -95 (Not supported)
+wlan1: interface state UNINITIALIZED->COUNTRY_UPDATE
+wlan1: interface state COUNTRY_UPDATE->HT_SCAN
+wlan1: Could not connect to kernel driver
+Using interface wlan1 with hwaddr d8:c8:e9:fe:89:a2 and ssid "LEDE-5G"
+wlan1: interface state HT_SCAN->ENABLED
+wlan1: AP-ENABLED
+```
+
+### 2.4 GHz
+
+手机 RSSI -36dBm
+
+电脑 RSSI -27dBm
+
+### 5 GHz
+
+手机 RSSI -49dBm
+
+电脑 RSSI -31dBm
+
+LAN -> 5G 640Mbps
+
+5G -> LAN 530Mbps
+
+无线客户端移动的时候速度有较大变化，5G -> LAN 刚开始时偶有断流，但不是每次都断。
+
+## Netgear R8500 固件
+
+```
+brcmfmac: brcmf_c_preinit_dcmds: Firmware version = wl0: Feb  3 2016 23:11:36 version 10.10.69.30014 (r617090) FWID 01-8ffebd3
+```
+
+```
+Configuration file: /tmp/run/hostapd-phy0.conf
+Failed to create interface mon.wlan0: -95 (Not supported)
+wlan0: interface state UNINITIALIZED->COUNTRY_UPDATE
+wlan0: Could not connect to kernel driver
+Using interface wlan0 with hwaddr d8:c8:e9:fe:89:a1 and ssid "LEDE"
+wlan0: interface state COUNTRY_UPDATE->ENABLED
+wlan0: AP-ENABLED
+Configuration file: /tmp/run/hostapd-phy1.conf
+Failed to create interface mon.wlan1: -95 (Not supported)
+wlan1: interface state UNINITIALIZED->COUNTRY_UPDATE
+wlan1: interface state COUNTRY_UPDATE->HT_SCAN
+wlan1: Could not connect to kernel driver
+Using interface wlan1 with hwaddr d8:c8:e9:fe:89:a2 and ssid "LEDE-5G"
+wlan1: interface state HT_SCAN->ENABLED
+wlan1: AP-ENABLED
+```
+
+### 2.4 GHz
+
+手机 RSSI -37dBm
+
+电脑 RSSI -24dBm（会从 -37 一路涨上去）
+
+### 5 GHz
+
+手机 RSSI -49dBm
+
+电脑 RSSI -28dBm
+
+LAN -> 5G 300Mbps（跟电脑摆放位置有很大关系，最大 500Mbps）（降低功率正常摆位可到 330Mbps）
+
+5G -> LAN 450Mbps（跟电脑摆放位置有很大关系，最大 650Mbps）（降低功率正常摆位可到 500Mbps）
+
+## 某未知型号路由的固件
+
+```
+brcmfmac: brcmf_c_preinit_dcmds: Firmware version = wl0: Jan 25 2017 20:24:34 version 10.10.122.308 (r) FWID 01-5df4385d
+```
+
+```
+Failed to create interface mon.wlan0: -95 (Not supported)
+wlan0: interface state UNINITIALIZED->COUNTRY_UPDATE
+wlan0: Could not connect to kernel driver
+Using interface wlan0 with hwaddr d8:c8:e9:fe:89:a1 and ssid "LEDE"
+wlan0: interface state COUNTRY_UPDATE->ENABLED
+wlan0: AP-ENABLED
+Configuration file: /tmp/run/hostapd-phy1.conf
+Failed to create interface mon.wlan1: -95 (Not supported)
+wlan1: interface state UNINITIALIZED->COUNTRY_UPDATE
+wlan1: interface state COUNTRY_UPDATE->HT_SCAN
+wlan1: Could not connect to kernel driver
+Using interface wlan1 with hwaddr d8:c8:e9:fe:89:a2 and ssid "LEDE-5G"
+wlan1: interface state HT_SCAN->ENABLED
+wlan1: AP-ENABLED
+```
+
+### 2.4 GHz
+
+手机 RSSI -35dBm
+
+电脑 RSSI -30dBm
+
+### 5 GHz
+
+手机 RSSI -49dBm
+
+电脑 RSSI -31dBm（从 -37 涨上来）
+
+LAN -> 5G 440Mbps（不稳定，改变摆位后550Mbps稳定）
+
+5G -> LAN 600Mbps（不稳定，改变摆位后650Mbps稳定）
+
+## K3 固件
+
+```
+brcmfmac: brcmf_c_preinit_dcmds: Firmware version = wl0: Aug 19 2016 15:22:35 version 10.10.69.74 (r629731 WLTEST) FWID 01-5c0166fa
+```
+
+```
+ifconfig: SIOCGIFFLAGS: No such device
+Configuration file: /tmp/run/hostapd-phy0.conf
+Failed to create interface mon.wlan0: -95 (Not supported)
+wlan0: interface state UNINITIALIZED->COUNTRY_UPDATE
+wlan0: Could not connect to kernel driver
+Using interface wlan0 with hwaddr d8:c8:e9:fe:89:a1 and ssid "LEDE"
+wlan0: interface state COUNTRY_UPDATE->ENABLED
+wlan0: AP-ENABLED
+Configuration file: /tmp/run/hostapd-phy1.conf
+Could not open configuration file '/tmp/run/hostapd-phy1.conf' for reading.
+Failed to set up interface with /tmp/run/hostapd-phy1.conf
+Failed to initialize interface
+```
+
+（无法在同样的时间内初始化两张卡）
+
+只有 2.4 GHz 能够建立 AP，而且建立后无法连接，要么直接不能关联，要么密码错误。
