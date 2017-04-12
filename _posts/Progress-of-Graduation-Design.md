@@ -723,3 +723,69 @@ binwalk 都上了，发现固件是 VxWorks 的，放弃。这时候已经晚上
 ### 2017/04/06
 
 上午又是莫名其妙的讨论，我模型都写完了（或者说 JSON 结构都定了）还在说需要哪些功能，这不是早就定好了吗？于是又浪费大半个小时。
+
+### 2017/04/07
+
+后面这几天就是在助攻 Android 了。代码写到头晕，赶 deadline 代码质量不能看，Activity 里塞一大坨…… 还好 Django 比较稳（不过现在不限制权限，随便读写，以后肯定是不行的），后台一直都没出什么问题。
+
+一天过去了最终还是只做到题目显示，做不到提交，丢那里了。
+
+### 2017/04/08
+
+加班加班！说是要周末演示，但没说时间，只能先来了。一上午把答案提交做了（开一个数组，监听每一个控件的变化（感人的 `implements` 列表），变化的时候就存进来，提交时 JSON 化）下午起床的时候说演示时间待定，于是就不去了，看串口玩。// 明明一样的初始化参数，`stty` 在官方和 LEDE 里都是一样的，device tree 里 UART1 需要的 clock-frequency 也加上了，/proc/tty 里的属性也比较过了，为毛 LEDE 上的 UART1 就是不能用？
+
+### 2017/04/09
+
+上午进行演示。客户点着要看从服务端下发数据到手机，害怕。不过最后看起来还算成功的。新增需求包括未授权设备不能登录、按设备设置权重。
+
+继续看串口，官方固件拆包修改加了 strace，自己编译了个静态链接的大型 busybox，看了 uhmi 的初始化阶段的调用，并不能发现什么。不过确实可以看到在开机后的默认状态下把 GPIO 8 拉高会导致屏幕重启。
+
+### 2017/04/10
+
+下周出差，我也被要求去？（此处应该说 6 了，但是……）
+
+官方固件内核好辣鸡，cmdline 上加了 `log_buf_len={31,10485760}` 两种方式都不能实现扩大 dmesg 缓冲区，硬改了 dhd.ko 把刷屏的信息都 zero 掉了，最多也只能看到 PCI 初始化的最后一部分。不过串口的三行初始化信息倒是都有了，可是相比 LEDE 的区别除了最开始的 tag 不同（LEDE 是 `18000400.0`，官方是 `serial8250.0`）后面的 MMIO 地址和 16550 类型都一毛一样，而且 UART0 两者都能用…… 我开始怀疑是不是官方内核有魔改。
+
+此外，把固件里的 uhmi 替换成 stub，可以发现即使没有 uhmi 的 GPIO 操作，自己写的程序也一样能读串口。这说明屏幕不需要特定的 GPIO 就能操作，好气啊。当然，会不会是 uhmi 被调起来之前就已经有程序做了初始化呢？然而搜索 ttyS1 就只有 uhmi 有……
+
+### 2017/04/11
+
+Django 要实现在自带 admin 新建时中自动填充 ForeignKey(User) 为当前 user 的话，可以在 XXXAdmin 的 `get_form` 中这样写：
+
+```python
+    def get_form(self, request, obj=None, **kwargs):
+        form = super(QuestionTemplateAdmin, self).get_form(request, obj, **kwargs)
+        if obj is None:  # Default to current user when adding templates
+            form.base_fields['foreignKeyUser'].initial = request.user
+        return form
+```
+
+这样在新建时就会把这个字段默认设置成当前 user. 如果要更进一步，使其在新建时虽然有默认值但不可编辑，并且在查看已有对象时直接变成 readonly，可以继续加：
+
+```python
+    def get_readonly_fields(self, request, obj=None):
+        readonly_fields = ('createdOn', 'reviewee_text')
+        if obj is not None:  # Disable editing createdBy in existing templates
+            readonly_fields += ('foreignKeyUser',)
+        return readonly_fields
+```
+
+然后新建 JavaScript，使其在 window.onload 的时候把 `#id_foreignKeyUser` disable 掉就好。右边三个编辑按钮也可以 remove. 上传的时候记得 collectstatic.
+
+如果把这个字段直接列入 readonly_fields 的话，form.fields 里面就不会有这一项，可能会造成非 NULL 字段未填写的问题。
+
+新的需求（重要度从高到低）：
+
+1. 为每个设备和人员指定所属权重组，但是每个组的权重不是固定的，每个项目里每个组的权重会不一样
+2. 被评价人 5 选 3 评价，问题里 19 选 10 评价
+3. 为每个模板增加回答说明和评价标准
+
+### 2017/04/12
+
+今天没下雨，但是比原来下雨的时候还要困……
+
+上面说到“被评价人 5 选 3 评价，问题里 19 选 10 评价”这个需求，选择被评价人倒是好说，选择问题就比较尴尬了。问卷里并不是只有这一组 19 个问题，可能存在前 6 题全做，后 19 题选 10 个这种情况。按理说应该是在 Template 和 Question 中间加一层 QuestionGroup 隔开，但Django 不支持 nested inline，那就只能把 Group 单独加一个 inline 了，然后在 Question 里加一个 Group 字段来选择。
+
+而“权重组”这个概念比较有趣，原本是有 WeighGroup 的，每个人和设备都需要选择一个（否则默认权重为 1）。我原来以为每个组的权重数值是固定的，所以数值直接写在组里。现在组没有固定的权重数值，而是要由项目决定每个组有多少权重，应该怎么表示呢？现在的方法是新建一个叫 Weigh 的模型，一个字段放组，一个字段放权重数值，一个字段放关联项目，然后 inline 到 Project 下面。有点绕，但是能用的样子。
+
+关于那个路由器屏幕的问题，我以为是 LEDE 的内核没实现好，于是强行拿 AC88U 的预编译内核拆出来给它 tftp 启动了，发现状况与 LEDE 一样，我自己的测试程序只能收到一个 0x00 就再也没有了。而官方内核不用 uhmi 做初始化的话，用我的测试程序一样能收到结果。那么问题来了，是官方内核做了 hack，还是 userspace 有其他程序做了串口以外的初始化操作？如果是的话，是 GPIO 吗？屏幕的排线有 14 针，串口两三针差不多了，已知的 GPIO 7、8 两针，供电两针，还有一大堆针脚都不知道干嘛的…… 难道是说有额外的 GPIO？说到这里想起来这路由器没有灯，也就是说不像别的路由一样要初始化一大堆关于灯的 GPIO，那么固件里只要出现 GPIO 操作，很可能就是跟屏幕有关了（当然还可能跟 USB 电源开关和 RESET 有关——不过这两个就很少出现了）也许可以从这里入手试试。
