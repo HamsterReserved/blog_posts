@@ -106,7 +106,7 @@ DNAT 目标显然就是家里的路由器了。家里路由器在内网，怎么
 
 ？？？
 
-这个时候需要翻出 iptables 各链规则流经顺序的经典图（图源维基：https://upload.wikimedia.org/wikipedia/commons/3/37/Netfilter-packet-flow.svg）：
+这个时候需要翻出 iptables 各链规则流经顺序的经典图（图源[维基](https://upload.wikimedia.org/wikipedia/commons/3/37/Netfilter-packet-flow.svg)）：
 
 ![Netfilter-packet-flow](../img/Port-Forwarding-NAT-Traversal-in-Kernel/Netfilter-packet-flow.svg)
 
