@@ -88,7 +88,7 @@ DNAT 目标显然就是家里的路由器了。家里路由器在内网，怎么
 
 > 是不是觉得后面一行 `192.168.1.0/24` 的路由多余了？
 >
-> 要注意上面 iptables 是在 PREROUTING 打标记的，这时候还没有进行路由判决。等到了判决的时候，数据包已经有 mark 了，也已经 DNAT 了。如果没有这条路由，这个目标 192.168.1.99 的数据包进入 1234 这张表来查，就没有目标发不出去了。
+> 要注意上面 iptables 是在 PREROUTING 打标记的，并且 VPN 传入的数据包也会被标记。这时候还没有进行路由判决。等到了判决的时候，这个传入的数据包已经有 mark 了，也已经 DNAT 了，就会变成“一个目标 192.168.1.99 的数据包要查询 1234 这张表”。如果没有这条路由，这个包就找不到下一跳的路由，发不出去了。
 
 然后再去试一下，哇，土制 QuickConnect！
 
@@ -106,7 +106,7 @@ DNAT 目标显然就是家里的路由器了。家里路由器在内网，怎么
 
 ？？？
 
-这个时候需要翻出 iptables 各链规则流经顺序的经典图（图源[维基](https://upload.wikimedia.org/wikipedia/commons/3/37/Netfilter-packet-flow.svg)）：
+这个时候需要翻出 iptables 各链规则流经顺序的经典图（图源[维基](https://upload.wikimedia.org/wikipedia/commons/3/37/Netfilter-packet-flow.svg)，矢量图，请随意放大）：
 
 ![Netfilter-packet-flow](../img/Port-Forwarding-NAT-Traversal-in-Kernel/Netfilter-packet-flow.svg)
 
